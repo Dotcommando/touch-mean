@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 var MongoClient = require('mongodb').MongoClient;
-var db;
+var db = require('./db');
 var ObjectID = require('mongodb').ObjectID;
 
 app.use(bodyParser.json());
@@ -28,7 +28,7 @@ app.get('/', function(req, res){
 });
 
 app.get('/artists', function(req, res){
-	db.collection('artists').find().toArray(function(err, docs) {
+	db.get().collection('artists').find().toArray(function(err, docs) {
 		if (err) {
 			console.log(err);
 			return res.sendStatus(500);
@@ -41,7 +41,7 @@ app.post('/artists', function(req, res){
 	var artist = {
 		name: req.body.name
 	}
-	db.collection('artists').insert(artist, function(err, result) {
+	db.get().collection('artists').insert(artist, function(err, result) {
 		if (err) {
 			console.log(err);
 			return res.sendStatus(500);
@@ -51,7 +51,7 @@ app.post('/artists', function(req, res){
 });
 
 app.put('/artists/:id', function(req, res) {
-	db.collection('artists').update(
+	db.get().collection('artists').update(
 		{ _id: ObjectID(req.params.id) },
 		{ $set: { name: req.body.name } },
 		{
@@ -69,7 +69,7 @@ app.put('/artists/:id', function(req, res) {
 });
 
 app.delete('/artists/:id', function(req, res) {
-	db.collection('artists').deleteOne(
+	db.get().collection('artists').deleteOne(
 		{ _id: ObjectID(req.params.id) },
 		function (err, result) {
 			if (err) {
@@ -82,7 +82,7 @@ app.delete('/artists/:id', function(req, res) {
 });
 
 app.get('/artists/:id', function(req, res){
-	db.collection('artists').findOne({ _id: ObjectID(req.params.id) }, function(err, doc){
+	db.get().collection('artists').findOne({ _id: ObjectID(req.params.id) }, function(err, doc){
 		if (err) {
 			console.log(err);
 			return res.sendStatus(500);
@@ -91,9 +91,8 @@ app.get('/artists/:id', function(req, res){
 	});
 });
 
-MongoClient.connect('mongodb://localhost:27017/', function(err, database) {
+db.connect('mongodb://localhost:27017/', function(err, database) {
 	if (err) return console.log(err);
-	db = database.db('mongoAPI');
 	app.listen(3012, function(){
 		console.log('API app started');
 	});
