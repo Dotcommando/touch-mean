@@ -51,18 +51,34 @@ app.post('/artists', function(req, res){
 });
 
 app.put('/artists/:id', function(req, res) {
-	var artist = artists.find(function(artist){
-		return artist.id === Number(req.params.id);
-	});
-	artist.name = req.body.name;
-	res.send(artist);
+	db.collection('artists').update(
+		{ _id: ObjectID(req.params.id) },
+		{ $set: { name: req.body.name } },
+		{
+			upsert: false,
+			multi: false
+		},
+		function (err, result) {
+			if (err) {
+				console.log(err);
+				return res.sendStatus(500);
+			}
+			res.sendStatus(200);
+		}
+	);
 });
 
 app.delete('/artists/:id', function(req, res) {
-	artists = artists.filter(function(artist){
-		return artist.id !== Number(req.params.id);
-	});
-	res.sendStatus(200);
+	db.collection('artists').deleteOne(
+		{ _id: ObjectID(req.params.id) },
+		function (err, result) {
+			if (err) {
+				console.log(err);
+				return res.sendStatus(500);
+			}
+			res.sendStatus(200);
+		}
+	);
 });
 
 app.get('/artists/:id', function(req, res){
